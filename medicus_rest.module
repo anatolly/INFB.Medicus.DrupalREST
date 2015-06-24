@@ -1,0 +1,744 @@
+<?php
+
+define('MEDICUS_REST_API_URL', 'http://medicus.caramba-shop.ru:1337/api/v1.0/');
+
+/**
+* Implements hook_entity_info().
+*/
+function medicus_rest_entity_info() {
+
+  $entity_admin_path = medicus_rest_admin_path();
+
+  $entities['medicus_rest_probedata1'] = array(
+    'label' => t('medicus rest probedata1 entity'),
+    'controller class' => 'MedicusRestProbedata1Controller',
+//       'base table' => 'medicus_rest', // Если при установке ругается на EntityFieldQuery то нужно объявить тут и создать в базе пустую таблицу, потом можно убрать
+    'base table' => NULL, 
+    'load hook' => 'medicus_rest_probedata1_load',
+    'uri callback' => 'medicus_rest_uri',
+    'fieldable' => FALSE, // We want to be able to attach fields to our entity.
+    
+    // Then we add some properties that influence how our entities are treated
+    'entity keys' => array( // These keys are the name of properties of entity objects.
+      'id' => 'id',
+//         'label' => 'Name',
+    ),
+    
+    'bundle keys' => array(
+      'bundle' => 'type',
+    ),
+    
+    'bundles' => array(
+      'medicus_rest_probedata1_bundle' => array(
+        'label' => t('medicus rest probedata1 entity bundle'),
+        'admin' => array(
+          'path' => "{$entity_admin_path}/%entity_type",
+          'real path' => "{$entity_admin_path}/medicus_rest_probedata1_bundle",
+          'bundle argument' => 3,
+          'access arguments' => array('administer content types'),
+        ),
+      ),
+    ),
+    'view modes' => array(
+      'full' => array(
+        'label' => t('Full content'),
+        'custom settings' => FALSE,
+      ),
+      'teaser' => array(
+        'label' => t('Teaser'),
+        'custom settings' => TRUE,
+      ),
+    ),
+    
+    // Finally, we specify what part of our code will be acting on our entities, overriding the defaults. This can be done by specifying callbacks or methods on the entity controller class.
+//       'access callback' => 'mymodule_my_remote_entity_access',
+  );
+    
+  return $entities;
+}
+
+
+/**
+* Implements hook_entity_property_info().
+*/
+function medicus_rest_entity_property_info() {
+
+  $info['medicus_rest_probedata1']['properties']['id'] = array(
+      'label' => 'id',
+      'type' => 'int',
+    );
+  $info['medicus_rest_probedata1']['properties']['Name'] = array(
+      'label' => 'Name',
+      'type' => 'text',
+    );
+  $info['medicus_rest_probedata1']['properties']['createdAt'] = array(
+      'label' => 'createdAt',
+      'type' => 'date',
+    );
+  $info['medicus_rest_probedata1']['properties']['updatedAt'] = array(
+      'label' => 'updatedAt',
+      'type' => 'date',
+    );
+  $info['medicus_rest_probedata1']['properties']['Text1'] = array(
+      'label' => 'Text1',
+      'type' => 'text',
+    );
+  $info['medicus_rest_probedata1']['properties']['Text2'] = array(
+      'label' => 'Text2',
+      'type' => 'text',
+    );
+  $info['medicus_rest_probedata1']['properties']['Int1'] = array(
+      'label' => 'Int1',
+      'type' => 'integer',
+    );
+  $info['medicus_rest_probedata1']['properties']['Int2'] = array(
+      'label' => 'Int2',
+      'type' => 'integer',
+    );
+
+  return $info;
+}
+
+
+function medicus_rest_menu() {
+  $items = array();
+  
+  $entity_admin_path = medicus_rest_admin_path();
+
+  $items['medicus-rest-testing'] = array(
+    'title' => 'Medicus REST testing',
+    'description' => 'Medicus REST testing page',
+    'page callback' => 'medicus_rest_testing_page',
+    'page arguments' => array(true),
+//     'access arguments' => array('access administration pages'),
+    'access callback' => TRUE,
+//     'type' => MENU_CALLBACK,
+    'file' => 'medicus_rest.testing.inc',
+  );
+  
+  $items['medicus-rest'] = array(
+    'title' => 'Medicus REST overview',
+//     'title callback' => 'medicus_rest_medicus_rest_title',
+//     'title arguments' => array(3),
+    'page callback' => 'medicus_rest_overview_page',
+//     'access callback' => 'commerce_order_customer_order_view_access',
+//     'access arguments' => array(3),
+    'weight' => 0,
+//     'context' => MENU_CONTEXT_PAGE | MENU_CONTEXT_INLINE,
+    'access arguments' => array('access content'),
+    'file' => 'medicus_rest.pages.inc',
+  );  
+  
+  $items['medicus-rest/probedata1'] = array(
+    'title' => 'Medicus REST probedata1 list',
+//     'title callback' => 'medicus_rest_medicus_rest_title',
+//     'title arguments' => array(3),
+    'page callback' => 'medicus_rest_entity_list_page',
+    'page arguments' => array(1),
+//     'access callback' => 'commerce_order_customer_order_view_access',
+//     'access arguments' => array(1),
+    'weight' => 0,
+//     'context' => MENU_CONTEXT_PAGE | MENU_CONTEXT_INLINE,
+    'access arguments' => array('access content'),
+    'file' => 'medicus_rest.pages.inc',
+  );  
+  
+  $items['medicus-rest/probedata1/%medicus_rest_probedata1'] = array(
+    'title' => 'medicus_rest probedata1 view page',
+//     'title callback' => 'medicus_rest_medicus_rest_title',
+//     'title arguments' => array(3),
+    'page callback' => 'medicus_rest_medicus_rest_view',
+    'page arguments' => array('probedata1', 2),
+//     'access callback' => 'commerce_order_customer_order_view_access',
+//     'access arguments' => array(3),
+    'weight' => 0,
+//     'context' => MENU_CONTEXT_PAGE | MENU_CONTEXT_INLINE,
+    'access arguments' => array('access content'),
+    'file' => 'medicus_rest.pages.inc',
+  );  
+  
+  $items['medicus-rest/probedata1/%medicus_rest_probedata1/view'] = array(
+    'title' => 'View',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => -10,
+//     'context' => MENU_CONTEXT_PAGE | MENU_CONTEXT_INLINE,
+  );
+  
+  $items['medicus-rest/probedata1/%medicus_rest_probedata1/edit'] = array(
+    'title' => 'Edit',
+//     'title callback' => 'medicus_rest_medicus_rest_title',
+//     'title arguments' => array(3),
+    'page callback' => 'medicus_rest_medicus_rest_form_wrapper',
+    'page arguments' => array(2),
+    'access callback' => TRUE,
+//     'access callback' => 'commerce_order_customer_order_view_access',
+//     'access arguments' => array(3),
+    'access arguments' => array('access content'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 20,
+//     'context' => MENU_CONTEXT_INLINE,
+    'file' => 'medicus_rest.pages.inc',
+  );  
+  
+  $items['medicus-rest/probedata1/%medicus_rest_probedata1/delete'] = array(
+    'title' => 'Delete',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('medicus_rest_medicus_rest_delete_confirm', 2),
+    'access callback' => TRUE,
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 21,
+//     'context' => MENU_CONTEXT_INLINE,
+    'file' => 'medicus_rest.pages.inc',
+  );
+
+  $items['medicus-rest/probedata1/add'] = array(
+    'title' => 'Add',
+    'page callback' => 'medicus_rest_medicus_rest_form_wrapper',
+    'page arguments' => array(1),
+    'access callback' => TRUE,
+//     'access callback' => 'commerce_order_customer_order_view_access',
+//     'access arguments' => array(3),
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+    'file' => 'medicus_rest.pages.inc',
+  );
+
+  $items[$entity_admin_path] = array(
+    'title' => 'Medicus REST Entity types',
+    'description' => 'A centralized administrative section for Medicus REST entity types',
+    'page callback' => 'medicus_rest_entity_type_list',
+    'access callback' => TRUE,
+//     'access callback' => 'eck_access',
+//     'access arguments' => array("list", "entity_type"),
+    'file' => 'medicus_rest.admin.inc',
+  );
+
+  return $items;
+}
+
+
+/**
+* Путь к разделу администрирования Medicus REST
+*/
+function medicus_rest_admin_path() {
+  return "admin/structure/medicus-rest";
+}
+
+
+/**
+* конвертирует entity_type системы Drupal в тип данных REST
+*/
+function medicus_type_drupal2rest($drupal_type) {
+  $rest_type = str_replace('medicus_rest_','',$drupal_type);
+  return $rest_type;
+}
+
+
+/**
+* конвертирует тип данных REST в entity_type системы Drupal
+*/
+function medicus_type_rest2drupal($rest_type) {
+  $drupal_type = 'medicus_rest_' . $rest_type;
+  return $drupal_type;
+}
+
+
+class MedicusRestController extends DrupalDefaultEntityController implements EntityAPIControllerInterface {
+  protected $entityRestType;
+
+  /**
+   * Create a new entity.
+   *
+   * @param array $values
+   *   An array of values to set, keyed by property name.
+   * @return
+   *   A new instance of the entity type.
+   */
+  public function create(array $values = array()) {
+    // Add is_new property if it is not set.
+    $values += array('is_new' => TRUE);
+
+    // If there is a class for this entity type, instantiate it now.
+    if (isset($this->entityInfo['entity class']) && $class = $this->entityInfo['entity class']) {
+      $entity = new $class($values, $this->entityType);
+    }
+    else {
+      // Otherwise use a good old stdClass.
+      $entity = (object) $values;
+    }
+
+    // Allow other modules to alter the created entity.
+    drupal_alter('commerce_entity_create', $this->entityType, $entity);
+
+    return $entity;
+  }
+
+  public function load($ids = array(), $conditions = array()) {
+//     krumo($this, $this->entityRestType); die;
+    $entities = array();
+    // This method takes an array of IDs, but our webservice only supports loading one entity at a time.
+    
+    if(is_int($ids)) $ids = array($ids);
+    
+    foreach ($ids as $id) {
+       $entities[$id] = medicus_rest_load($this->entityRestType, $id);
+      // This function should contain all the code to make a request to the web service and handle any errors.
+//       if ($entity = medicus_rest_entity_load('probedata1', $id)) {
+//         // Entities must be keyed by entity ID in order for field values to be correctly attached.
+//         $entities[$entity->id] = $entity;
+//       }
+    }
+
+//     dpm('MedicusRestController load');
+//     echo 'MedicusRestController load';
+//     krumo($entities, $ids, $conditions); 
+    return $entities;
+  }
+
+  public function save($entity) {
+//     throw new Exception('Not implemented');
+    // There is nothing to save for the entity itself,
+    // we just save the fields.
+//     field_attach_presave('my_remote_entity_type', $entity);
+//     field_attach_update('my_remote_entity_type', $entity);
+
+    // If some entity properties can be modified, you would save them here.
+    $rest_type = str_replace('medicus_rest_', '', $entity->entity_type);
+    
+    if($entity->is_new) {
+//       dpm($entity);
+      medicus_rest_query($rest_type, $entity, 'POST');
+    } else {
+      medicus_rest_query($rest_type, $entity, 'PUT');
+    }
+    
+     // We don’t call parent::save(), because we don’t have anything to save locally.
+  }
+
+  /**
+   * Delete permanently saved entities.
+   *
+   * In case of failures, an exception is thrown.
+   *
+   * @param $ids
+   *   An array of entity IDs.
+   * @param $transaction
+   *   An optional transaction object to pass thru. If passed the caller is
+   *   responsible for rolling back the transaction if something goes wrong.
+   */
+  public function delete($ids, DatabaseTransaction $transaction = NULL) {
+    medicus_rest_query($rest_type, $entity->entity_id, 'DELETE');
+  }
+
+
+  /**
+   * (Internal use) Invokes a hook on behalf of the entity.
+   *
+   * For hooks that have a respective field API attacher like insert/update/..
+   * the attacher is called too.
+   */
+  public function invoke($hook, $entity) {
+    throw new Exception('Not implemented');
+  }
+
+  /**
+   * Implements EntityAPIControllerInterface.
+   */
+  public function export($entity, $prefix = '') {
+    throw new Exception('Not implemented');
+  }
+
+  /**
+   * Implements EntityAPIControllerInterface.
+   */
+  public function import($export) {
+    throw new Exception('Not implemented');
+  }
+
+  /**
+   * Builds a structured array representing the entity's content.
+   *
+   * The content built for the entity will vary depending on the $view_mode
+   * parameter.
+   *
+   * @param $entity
+   *   An entity object.
+   * @param $view_mode
+   *   View mode, e.g. 'full', 'teaser'...
+   * @param $langcode
+   *   (optional) A language code to use for rendering. Defaults to the global
+   *   content language of the current request.
+   * @return
+   *   The renderable array.
+   */
+  public function buildContent($entity, $view_mode = 'full', $langcode = NULL, $content = array()) {
+    // Remove previously built content, if exists.
+    $entity->content = $content;
+    $langcode = isset($langcode) ? $langcode : $GLOBALS['language_content']->language;
+
+    // Add in fields.
+    if (!empty($this->entityInfo['fieldable'])) {
+      $entity->content += field_attach_view($this->entityType, $entity, $view_mode, $langcode);
+    }
+
+    // Invoke hook_ENTITY_view() to allow modules to add their additions.
+//     rules_invoke_all($this->entityType . '_view', $entity, $view_mode, $langcode);
+
+    // Invoke the more generic hook_entity_view() to allow the same.
+    module_invoke_all('entity_view', $entity, $this->entityType, $view_mode, $langcode);
+    
+    $entity->content['properties'] = array(
+//       '#theme' => 'field',
+//       '#title' => 'prop title',
+//       '#label display' => 'inline',
+      '0' => array(
+        '#markup' => "<h3>raw entity output:</h3><pre>".var_export($entity,true)."</pre>",
+//         '#value' => 'prop output 2',
+        ),
+//       '#value' => 'prop output 3',
+      );
+
+//     krumo($entity, $entity->content['properties']); die;
+    
+    // Remove the build array information from the entity and return it.
+    $build = $entity->content;
+    unset($entity->content);
+    return $build;
+  }
+
+  /**
+   * Generate an array for rendering the given entities.
+   *
+   * @param $entities
+   *   An array of entities to render.
+   * @param $view_mode
+   *   View mode, e.g. 'full', 'teaser'...
+   * @param $langcode
+   *   (optional) A language code to use for rendering. Defaults to the global
+   *   content language of the current request.
+   * @param $page
+   *   (optional) If set will control if the entity is rendered: if TRUE
+   *   the entity will be rendered without its title, so that it can be embeded
+   *   in another context. If FALSE the entity will be displayed with its title
+   *   in a mode suitable for lists.
+   *   If unset, the page mode will be enabled if the current path is the URI
+   *   of the entity, as returned by entity_uri().
+   *   This parameter is only supported for entities which controller is a
+   *   EntityAPIControllerInterface.
+   * @return
+   *   The renderable array.
+   */
+  public function view($entities, $view_mode = '', $langcode = NULL, $page = NULL) {
+    // Create a new entities array keyed by entity ID.
+    $rekeyed_entities = array();
+
+    foreach ($entities as $key => $entity) {
+      // Use the entity's ID if available and fallback to its existing key value
+      // if we couldn't determine it.
+      if (isset($entity->{$this->idKey})) {
+        $key = $entity->{$this->idKey};
+      }
+
+      $rekeyed_entities[$key] = $entity;
+    }
+
+    $entities = $rekeyed_entities;
+
+    // If no view mode is specified, use the first one available..
+    if (!isset($this->entityInfo['view modes'][$view_mode])) {
+      reset($this->entityInfo['view modes']);
+      $view_mode = key($this->entityInfo['view modes']);
+    }
+
+    if (!empty($this->entityInfo['fieldable'])) {
+      field_attach_prepare_view($this->entityType, $entities, $view_mode);
+    }
+
+    entity_prepare_view($this->entityType, $entities);
+    $langcode = isset($langcode) ? $langcode : $GLOBALS['language_content']->language;
+    $view = array();
+
+    // Build the content array for each entity passed in.
+    foreach ($entities as $key => $entity) {
+      $build = entity_build_content($this->entityType, $entity, $view_mode, $langcode);
+// krumo($build); die;
+      // Add default properties to the array to ensure the content is passed
+      // through the theme layer.
+//       $build += array(
+//         '#theme' => 'entity',
+//         '#entity_type' => $this->entityType,
+//         '#entity' => $entity,
+//         '#view_mode' => $view_mode,
+//         '#language' => $langcode,
+//         '#page' => $page,
+//       );
+
+      // Allow modules to modify the structured entity.
+      drupal_alter(array($this->entityType . '_view', 'entity_view'), $build, $this->entityType);
+      $view[$this->entityType][$key] = $build;
+    }
+
+    return $view;
+  }
+  
+//   protected function buildQuery($ids, $conditions = array(), $revision_id = FALSE) {
+// //     dpm('MedicusRestEntityAPIController buildQuery');
+// // //     $query = parent::buildQuery($ids, $conditions, $revision_id);
+// // //     if ($this->revisionKey) {
+// // //       // Compare revision id of the base and revision table, if equal then this
+// // //       // is the default revision.
+// // //       $query->addExpression('base.' . $this->revisionKey . ' = revision.' . $this->revisionKey, $this->defaultRevisionKey);
+// // //     }
+// //     return $query;
+//     return;
+//   }  
+// //   
+// //   public function query($ids, $conditions, $revision_id = FALSE) {
+// //     dpm('MedicusRestEntityAPIController query');
+// // //     // Build the query.
+// // //     $query = $this->buildQuery($ids, $conditions, $revision_id);
+// // //     $result = $query->execute();
+// // //     if (!empty($this->entityInfo['entity class'])) {
+// // //       $result->setFetchMode(PDO::FETCH_CLASS, $this->entityInfo['entity class'], array(array(), $this->entityType));
+// // //     }
+// //     return $result;
+// //   }  
+  
+//   public function execute() {
+//     dpm('MedicusRestController execute');
+//     return $result;
+//   }
+  
+}
+
+
+class MedicusRestProbedata1Controller extends MedicusRestController  {
+  protected $entityRestType = 'probedata1';
+}
+
+
+function medicus_rest_uri($entity) {
+  if(is_object($entity)) {
+    $rest_type = medicus_type_drupal2rest($entity->entity_type);
+    return array(
+      'path' => 'medicus-rest/' . $rest_type . '/' . $entity->id,
+    );
+  } else {
+    $rest_type = medicus_type_drupal2rest($entity);
+    return array(
+      'path' => 'medicus-rest/' . $rest_type,
+    );
+  }
+}
+
+
+function medicus_rest_probedata1_load($entity_id) {
+  $entities = medicus_rest_probedata1_load_multiple(array($entity_id), array());
+  return $entities ? reset($entities) : FALSE;
+}
+
+
+function medicus_rest_probedata1_load_multiple($entity_ids = array(), $conditions = array(), $reset = FALSE) {
+  return entity_load('medicus_rest_probedata1', $entity_ids, $conditions, $reset);
+}
+
+/**
+ * Implements hook_views_api().
+ */
+function medicus_rest_views_api() {
+  return array(
+    'api' => '3.0',
+    'path' => drupal_get_path('module', 'medicus_rest') . 'views',
+  );
+}
+
+function _medicus_rest_entity2json($entity) {
+  $data = json_encode($entity);
+  return $data;
+}
+
+/**
+* Выполняет запрос к REST для загрузки, обновления или добавления данных.
+* entity - for GET and DELETE - send entity_id, for POST and PUT - full entity object
+* $reset - очистка кеша.
+*/
+function medicus_rest_query($rest_type, $entity, $method = 'GET', $reset = FALSE) {
+  static $entity_cache;
+  
+  if($reset) $entity_cache = array();
+  
+  $variables['method'] = $method;
+  $variables['headers'][] = 'Content-Type:application/json';
+  
+  switch($method) {
+    case 'GET': // Load
+      if(isset($entity_cache["{$rest_type}_{$entity}"])) return $entity_cache["{$rest_type}_{$entity}"];
+      $query_url = MEDICUS_REST_API_URL . $rest_type . '/' . $entity . '/';
+      $reply = drupal_http_request($query_url, $variables);
+      $data = json_decode($reply->data);
+      $entity_cache["{$rest_type}_{$entity}"] = $data;
+     break;
+     
+    case 'PUT':  // Save
+      $query_url = MEDICUS_REST_API_URL . $rest_type . '/' . $entity->entity_id . '/';
+      $variables['data'] = _medicus_rest_entity2json($entity);
+      $reply = drupal_http_request($query_url, $variables);
+      $data = json_decode($reply->data);
+      $entity_cache["{$rest_type}_{$entity->entity_id}"] = $entity;
+     break;
+     
+    case 'POST':  // Create new
+      $query_url = MEDICUS_REST_API_URL . $rest_type . '/';
+      $variables['data'] = _medicus_rest_entity2json($entity);
+      $reply = drupal_http_request($query_url, $variables);
+      $data = json_decode($reply->data);
+      $entity_cache["{$rest_type}_{$entity->entity_id}"] = $entity;
+     break;
+     
+    case 'DELETE':  // Delete
+      $query_url = MEDICUS_REST_API_URL . $rest_type . '/' . $entity . '/';
+      $reply = drupal_http_request($query_url, $variables);
+      $data = json_decode($reply->data);
+      unset($entity_cache["{$rest_type}_{$entity}"]);
+     break;
+     
+     default: 
+       throw new Exception("Unknown method $method");
+       break;
+  }
+  return $data;
+}
+
+
+/**
+* Запрос для получения данных по параметрам напрямую к REST
+*/
+function medicus_rest_filter_query($rest_type, $where = NULL) {
+ 
+  $query_url = MEDICUS_REST_API_URL . $rest_type;
+  
+  if($where) $query_url .= '?where=' . json_encode($where);
+  
+  $data = json_decode(file_get_contents($query_url));
+  
+  return $data;
+}
+
+/**
+* Конвертирует ответ из REST в объект Drupal Entity
+*/
+function medicus_rest_rest2entity($rest_type, $rest_object) {
+  $entity = new stdclass;
+  
+  $entity->entity_type = 'medicus_rest_' . $rest_type;
+  
+  foreach($rest_object as $key => $val) {
+    switch($key) {
+      case 'id':
+        $entity->entity_id = $val;
+        $entity->$key = $val;
+        break;
+        
+      case 'createdAt':
+      case 'updatedAt':
+        $entity->$key = strtotime($val);
+//         krumo($entity,$key,$val); die;
+        break;
+      
+      default:
+        $entity->$key = $val;
+//         $entity->{$key}[LANGUAGE_NONE][0]['value'] = $val;
+    }
+  }
+  return $entity;
+}
+
+
+/**
+* Загрузка Drupal Entity из REST по id
+*/
+function medicus_rest_load($entity_rest_type, $id) {
+  $rest_type = str_replace('medicus_rest_','',$entity_rest_type);
+  $rest_object = medicus_rest_query($rest_type, $id, 'GET');
+  
+  $entity = medicus_rest_rest2entity($rest_type, $rest_object);
+  return $entity;
+}
+
+
+/**
+* Сохранение Drupal Entity в REST
+*/
+function medicus_rest_save($entity) {
+  $rest_type = str_replace('medicus_rest_','',$entity_rest_type);
+  $rest_object = medicus_rest_query($rest_type, $entity, 'PUT');
+  
+  $entity = medicus_rest_rest2entity($rest_type, $rest_object);
+//   krumo($rest_object, $entity); // die;
+  return $entity;
+}
+
+
+/**
+ * Implements hook_entity_query_alter().
+ *
+ * Allows the native use of EntityFieldQuery to query Medicus REST.
+ */
+function medicus_rest_entity_query_alter($query) { 
+  if(!isset($query->entityConditions['entity_type']['value']) || !in_array($query->entityConditions['entity_type']['value'], array('medicus_rest_probedata1'))) return;
+  $query->executeCallback = 'medicus_rest_execute_efq';
+}
+
+
+/**
+ * Execution callback for EntityFieldQuery when a remote entity type is being
+ * queried and has the appropriate methods.
+ *
+ * @param EntityFieldQuery $efq
+ *   The EntityFieldQuery object with which the remote entity query will be
+ *   built and executed.
+ *
+ * @return mixed
+ *   Either a number if count() was called or an array of associative arrays of
+ *   remote entities.
+ *
+ * @see EntityFieldQuery::queryCallback()
+ */
+function medicus_rest_execute_efq(EntityFieldQuery $efq) {
+  $entity_type = $efq->entityConditions['entity_type']['value'];
+  $rest_type = $rest_type = str_replace('medicus_rest_', '', $entity_type);
+  
+  $where = array();
+  
+  foreach ($efq->entityConditions as $id => $condition) {
+    switch($id) {
+      case 'entity_id':
+        if($condition['operator']) {
+          $where['id'] = array(
+            strtolower($condition['operator']) => $condition['value'],
+          );
+        } else {
+          $where['id'] = $condition['value'];
+        }
+    }
+  }
+  
+  // Copy each of the property conditions.
+  foreach ($efq->propertyConditions as $id => $condition) {
+    if($condition['operator']) {
+      $where[$condition['column']] = array(
+        strtolower($condition['operator']) => $condition['value'],
+      );
+    } else {
+      $where[$condition['column']] = $condition['value'];
+    }
+  }
+  
+  $result = medicus_rest_filter_query($rest_type, $where);
+  $efq_rest_result[$entity_type] = array();
+  foreach($result as $rest_object) {
+    $efq_rest_result[$entity_type][$rest_object->id] = medicus_rest_rest2entity($rest_type, $rest_object);
+  }
+    
+  return $efq_rest_result;
+}
